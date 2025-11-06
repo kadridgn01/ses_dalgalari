@@ -1,0 +1,23 @@
+{
+  "name": "Ses Analiz Programı",
+  "short_name": "Ses Analiz",
+  "description": "Ses kaydı analiz ve simülasyon programı.",
+  "start_url": "casus_program_arayuzu.html",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#00ff41",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192/00ff41/1f2937?text=SES",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://placehold.co/512x512/00ff41/1f2937?text=SES",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
