@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ses Analiz Programı</title>
-    <!-- PWA Manifest Linki -->
-    <link rel="manifest" href="manifest.json">
-    <!-- Tema Rengi (iOS Safari için) -->
-    <meta name="theme-color" content="#1a202c">
+    <!-- PWA Manifest Linki --><link rel="manifest" href="manifest.json">
+    <!-- Tema Rengi (iOS Safari için) --><meta name="theme-color" content="#1a202c">
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Ekranı kaplayan ve koyu tema sağlayan temel stiller */
         body, html {
@@ -18,6 +15,7 @@
             padding: 0;
             height: 100%;
             font-family: 'Inter', sans-serif;
+            background-color: #333; /* Arka planı görseldeki gibi daha koyu yapalım */
         }
         /* Özel 'hacker' yeşili */
         .text-matrix-green {
@@ -34,16 +32,38 @@
             display: block;
             background-color: #0a0a0a;
             border-radius: 0.5rem;
+            border: 1px solid #4a5568; /* Görseldeki gibi bir çerçeve */
+        }
+        /* Kaydırma çubuğu stilleri */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+        /* Slider'ların yanındaki değer göstergesi */
+        .slider-value {
+            width: 3rem; /* Sabit genişlik */
+            text-align: right;
+            font-mono: true;
+            color: #cbd5e0;
         }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-300 flex items-center justify-center h-screen p-4">
 
     <!-- Programın ana penceresi -->
-    <div class="bg-gray-800 border-2 border-gray-700 rounded-lg shadow-2xl w-full max-w-4xl h-[600px] flex flex-col overflow-hidden">
+    <div class="bg-gray-800 border-2 border-gray-700 rounded-lg shadow-2xl w-full max-w-6xl h-[700px] flex flex-col overflow-hidden">
         
         <!-- Başlık Çubuğu -->
-        <div class="bg-gray-700 p-2 flex items-center justify-between">
+        <div class="bg-gray-700 p-2 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center space-x-1.5">
                 <div class="w-3 h-3 bg-red-500 rounded-full"></div>
                 <div class="w-3 h-3 bg-yellow-400 rounded-full"></div>
@@ -53,51 +73,57 @@
             <div class="w-16"></div> <!-- Boşluk için -->
         </div>
 
-        <!-- Ana İçerik Alanı -->
+        <!-- Ana İçerik Alanı - ÜÇ SÜTUNLU YAPI -->
         <div class="flex flex-1 min-h-0">
             
-            <!-- Sol Panel: Ses Kayıtları -->
+            <!-- Sol Panel: Ses Kayıtları (w-1/3) -->
             <div class="w-1/3 bg-gray-800 border-r border-gray-700 p-4 flex flex-col">
                 <h2 class="text-lg font-bold text-matrix-green mb-4 border-b border-gray-700 pb-2">SES KAYITLARI</h2>
-                <ul class="space-y-2 overflow-y-auto" id="file-list">
+                <div class="flex justify-between text-xs text-gray-500 mb-2 px-2">
+                    <span>İSİM</span>
+                    <span>EYLEM</span>
+                </div>
+                <ul class="space-y-1 overflow-y-auto" id="file-list">
                     <!-- JavaScript ile doldurulacak -->
                 </ul>
-                <button id="transfer-button" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                <button id="transfer-button" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex-shrink-0">
                     Seçileni Aktar
                 </button>
             </div>
 
-            <!-- Sağ Panel: Önizleme ve Kontroller -->
-            <!-- DEĞİŞİKLİK: Kaydırma için overflow-y-auto eklendi -->
-            <div class="w-2/3 p-6 flex flex-col overflow-y-auto">
+            <!-- Orta Panel: Önizleme (w-1/3) -->
+            <div class="w-1/3 p-6 flex flex-col border-r border-gray-700">
                 <h2 class="text-lg font-bold text-gray-400 mb-2">ÖNİZLEME EKRANI</h2>
-                <p class="text-sm text-gray-500 mb-4">Seçili Kayıt: <span id="current-file" class="font-mono text-yellow-400">Hiçbiri</span></p>
+                <p class="text-sm text-gray-500 mb-4 truncate">Seçili Kayıt: <span id="current-file" class="font-mono text-yellow-400">Hiçbiri</span></p>
 
                 <!-- Ses Dalgası Simülasyon Alanı -->
-                <div class="w-full h-64 bg-black rounded-lg border-2 border-gray-700 p-2">
+                <div class="w-full h-64 bg-black rounded-lg p-2">
                     <canvas id="waveform-canvas"></canvas>
                 </div>
 
                 <!-- Kontrol Düğmeleri -->
                 <div class="mt-6 flex items-center space-x-4">
-                    <button id="play-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg flex items-center transition duration-200" disabled>
+                    <button id="play-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center transition duration-200" disabled>
                         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
                         OYNAT
                     </button>
-                    <button id="stop-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg flex items-center transition duration-200" disabled>
+                    <button id="stop-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center transition duration-200" disabled>
                         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 8a2 2 0 00-2 2v.001A2 2 0 008 12h4a2 2 0 002-2V9.999A2 2 0 0012 8H8z" clip-rule="evenodd"></path></svg>
                         DURDUR
                     </button>
                 </div>
                 
                 <!-- Durum Mesajı -->
-                <div id="status-message" class="mt-4 h-6 text-sm font-mono text-matrix-green"></div>
+                <div id="status-message" class="mt-4 h-6 text-sm font-mono text-matrix-green text-center"></div>
+            </div>
 
-                <!-- YENİ: Yapay Zeka Mix Ayarları -->
-                <div class="mt-6 border-t border-gray-700 pt-4 space-y-4">
+            <!-- Sağ Panel: Ayarlar (w-1/3) -->
+            <div class="w-1/3 p-6 flex flex-col overflow-y-auto">
+                
+                <!-- AI Model Ayarları -->
+                <div class="space-y-4">
                     <h3 class="text-md font-semibold text-matrix-green">YAPAY ZEKA SES MODELİ</h3>
                     
-                    <!-- AI Model Seçimi -->
                     <div>
                         <label for="ai-model" class="block text-sm font-medium text-gray-400 mb-1">Hedef Ses:</label>
                         <select id="ai-model" name="ai-model" class="block w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:border-matrix-green focus:ring-1 focus:ring-matrix-green">
@@ -108,19 +134,38 @@
                         </select>
                     </div>
 
-                    <!-- Ses Perdesi Slider -->
-                    <div>
+                    <div class="flex items-center justify-between">
                         <label for="pitch" class="block text-sm font-medium text-gray-400">Ses Perdesi (Pitch)</label>
-                        <input type="range" id="pitch" name="pitch" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                        <span id="pitch-value" class="slider-value">+0</span>
                     </div>
-
-                    <!-- Netlik Slider -->
-                    <div>
+                    <input type="range" id="pitch" name="pitch" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                    
+                    <div class="flex items-center justify-between">
                         <label for="clarity" class="block text-sm font-medium text-gray-400">AI Netlik (Clarity)</label>
-                        <input type="range" id="clarity" name="clarity" min="0" max="100" value="90" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                        <span id="clarity-value" class="slider-value">90</span>
+                    </div>
+                    <input type="range" id="clarity" name="clarity" min="0" max="100" value="90" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                    
+                    <div class="flex items-center justify-between">
+                        <label for="formant" class="block text-sm font-medium text-gray-400">Formant</label>
+                        <span id="formant-value" class="slider-value">0</span>
+                    </div>
+                    <input type="range" id="formant" name="formant" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+
+                    <div class="flex items-center justify-between">
+                        <label for="quality" class="block text-sm font-medium text-gray-400">AI Nitelik (Quality)</label>
+                        <span id="quality-value" class="slider-value">80</span>
+                    </div>
+                    <input type="range" id="quality" name="quality" min="0" max="100" value="80" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+
+                    <div class="flex items-center justify-between pt-2">
+                        <span class="text-sm font-medium text-gray-400">Esneme</span>
+                        <label for="stretch-toggle" class="inline-flex relative items-center cursor-pointer">
+                            <input type="checkbox" id="stretch-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-matrix-green"></div>
+                        </label>
                     </div>
 
-                    <!-- Gürültü Temizleme Toggle -->
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-400">Arka Plan Gürültü Temizle</span>
                         <label for="noise-reduction" class="inline-flex relative items-center cursor-pointer">
@@ -130,47 +175,29 @@
                     </div>
                 </div>
 
-                <!-- YENİ EKLENEN BÖLÜMLER -->
-                <div classs="mt-4 space-y-4">
-                    <!-- Formant Slider -->
+                <!-- Ekolayzır Bölümü -->
+                <div class="mt-6 border-t border-gray-700 pt-4 space-y-4">
+                    <h3 class="text-md font-semibold text-matrix-green">EKOLAYZIR (EQ)</h3>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-400">
+                        <span>Bass ++</span>
+                        <span>Tiz --</span>
+                    </div>
+                    <input type="range" id="eq-main" name="eq-main" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+
+                    <div class="flex items-center justify-between">
+                        <label for="human" class="block text-sm font-medium text-gray-400">Doğallık (İnsanileştirme)</label>
+                        <span id="human-value" class="slider-value">85</span>
+                    </div>
+                    <input type="range" id="human" name="human" min="0" max="100" value="85" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+
+                    <div class="flex items-center justify-between">
+                        <label for="reverb" class="block text-sm font-medium text-gray-400">İzole Reverb</label>
+                        <span id="reverb-value" class="slider-value">10</span>
+                    </div>
+                    <input type="range" id="reverb" name="reverb" min="0" max="100" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+
                     <div>
-                        <label for="formant" class="block text-sm font-medium text-gray-400 mt-4">Formant Kaydırma (Cinsiyet)</label>
-                        <input type="range" id="formant" name="formant" min="-5" max="5" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
-                    </div>
-
-                    <!-- Reverb Slider -->
-                    <div>
-                        <label for="reverb" class="block text-sm font-medium text-gray-400 mt-4">Yankı (Reverb)</label>
-                        <input type="range" id="reverb" name="reverb" min="0" max="100" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
-                    </div>
-
-                    <!-- Humanization Slider -->
-                    <div>
-                        <label for="human" class="block text-sm font-medium text-gray-400 mt-4">Doğallık (İnsanileştirme)</label>
-                        <input type="range" id="human" name="human" min="0" max="100" value="85" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
-                    </div>
-
-                    <!-- Ekolayzır Bölümü -->
-                    <div class="mt-6 border-t border-gray-700 pt-4">
-                        <h3 class="text-md font-semibold text-matrix-green">EKOLAYZIR (EQ)</h3>
-                        <div class="space-y-3 mt-2">
-                             <div>
-                                <label for="eq-bass" class="block text-sm font-medium text-gray-400">Bass (Düşük Frekans)</label>
-                                <input type="range" id="eq-bass" name="eq-bass" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
-                            </div>
-                            <div>
-                                <label for="eq-mid" class="block text-sm font-medium text-gray-400">Mid (Orta Frekans)</label>
-                                <input type="range" id="eq-mid" name="eq-mid" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
-                            </div>
-                            <div>
-                                <label for="eq-treble" class="block text-sm font-medium text-gray-400">Treble (Yüksek Frekans)</label>
-                                <input type="range" id="eq-treble" name="eq-treble" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Arka Plan Ambiyans Ekleme -->
-                    <div class="mt-6 border-t border-gray-700 pt-4">
                         <label for="ambience" class="block text-sm font-medium text-gray-400 mb-1">Arka Plan Ambiyansı Ekle:</label>
                         <select id="ambience" name="ambience" class="block w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:border-matrix-green focus:ring-1 focus:ring-matrix-green">
                             <option>Yok</option>
@@ -180,9 +207,11 @@
                             <option value="hizli_nefes">Hızlı Nefes Alma</option>
                         </select>
                     </div>
+                    
+                    <div class="text-sm text-red-400 font-mono pt-2">
+                        Durum: Fazla Gürültülü
+                    </div>
                 </div>
-
-
             </div>
         </div>
     </div>
@@ -200,10 +229,37 @@
 
         // --- Simülasyon Değişkenleri ---
         let animationFrameId = null;
-        let audioContext; // Gerçek ses için değil, sadece simülasyonu zamanlamak için
-        let analyser;
-        let dataArray;
         let selectedFile = null;
+        let currentAmplitude = 0;
+        let targetAmplitude = 0;
+        let amplitudeChangeSpeed = 0.05;
+        let lastAmplitudeChangeTime = 0;
+        const amplitudeChangeInterval = 500;
+        let noiseOffset = 0;
+
+        // --- Slider Değer Göstergeleri ---
+        const sliderValueMap = {
+            'pitch': { el: document.getElementById('pitch-value'), prefix: '+' },
+            'clarity': { el: document.getElementById('clarity-value') },
+            'formant': { el: document.getElementById('formant-value') },
+            'quality': { el: document.getElementById('quality-value') },
+            'human': { el: document.getElementById('human-value') },
+            'reverb': { el: document.getElementById('reverb-value') }
+        };
+
+        // --- Slider'lara Event Listener Ekle ---
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const map = sliderValueMap[e.target.id];
+                if (map && map.el) {
+                    let value = e.target.value;
+                    if (map.prefix && value > 0) {
+                        value = map.prefix + value;
+                    }
+                    map.el.textContent = value;
+                }
+            });
+        });
 
         // --- Örnek Dosya Listesi ---
         const files = [
@@ -211,7 +267,8 @@
             { id: 'rec_002', name: 'MEHMET_01_orj.wav', user: 'Mehmet' },
             { id: 'rec_003', name: 'AZIL_01_orj.wav', user: 'Azil' },
             { id: 'rec_004', name: 'HAVVA_DAVET_v2.wav', user: 'Havva (Değiştirilmiş)' },
-            { id: 'rec_005', name: 'MEHMET_DAVET_v1.wav', user: 'Mehmet (Değiştirilmiş)' }
+            { id: 'rec_005', name: 'MEHMET_DAVET_v1.wav', user: 'Mehmet (Değiştirilmiş)' },
+            { id: 'rec_006', name: 'MDRETC_v1.wav', user: 'Bilinmeyen' }
         ];
 
         // --- Canvas Boyutunu Ayarla ---
@@ -220,20 +277,36 @@
             canvas.height = canvas.parentElement.clientHeight;
         }
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        
 
         // --- Dosya Listesini Doldur ---
-        files.forEach(file => {
-            const li = document.createElement('li');
-            li.className = 'p-2 rounded-md hover:bg-gray-700 cursor-pointer text-sm font-mono transition duration-150';
-            li.textContent = file.name;
-            li.dataset.fileId = file.id;
-            li.addEventListener('click', () => selectFile(file));
-            fileListEl.appendChild(li);
-        });
+        function renderFileList() {
+            fileListEl.innerHTML = ''; // Listeyi temizle
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'p-2 rounded-md hover:bg-gray-700 cursor-pointer text-sm font-mono transition duration-150 flex justify-between items-center';
+                li.dataset.fileId = file.id;
+                
+                // Dosya adı
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = file.name;
+                nameSpan.className = 'truncate';
+                
+                // Eylem ikonu
+                const actionSpan = document.createElement('span');
+                actionSpan.textContent = '>>';
+                actionSpan.className = 'text-gray-500 text-xs';
+
+                li.appendChild(nameSpan);
+                li.appendChild(actionSpan);
+                
+                li.addEventListener('click', () => selectFile(file, li));
+                fileListEl.appendChild(li);
+            });
+        }
 
         // --- Dosya Seçme Fonksiyonu ---
-        function selectFile(file) {
+        function selectFile(file, liElement) {
             selectedFile = file;
             currentFileEl.textContent = file.name;
             playButton.disabled = false;
@@ -244,65 +317,60 @@
                 child.classList.remove('bg-matrix-green', 'text-gray-900', 'font-bold');
             });
             // Tıklanana aktif stili ekle
-            const activeLi = fileListEl.querySelector(`[data-file-id="${file.id}"]`);
-            if (activeLi) {
-                activeLi.classList.add('bg-matrix-green', 'text-gray-900', 'font-bold');
-            }
+            liElement.classList.add('bg-matrix-green', 'text-gray-900', 'font-bold');
             
             stopSimulation(); // Yeni dosya seçildiğinde eski simülasyonu durdur
         }
 
         // --- Ses Dalgası Simülasyonu ---
-        let noiseOffset = 0;
-        
-        // DEĞİŞİKLİK: Ses dalgası çizim fonksiyonu daha gerçekçi olması için tamamen değiştirildi.
-        function drawWaveform() {
-            if (!animationFrameId) return; // Durdurulduysa çizme
+        function drawWaveform(currentTime) {
+            if (!animationFrameId) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.lineWidth = 2;
-            ctx.strokeStyle = '#00ff41'; // Matrix yeşili
+            ctx.strokeStyle = '#00ff41';
             ctx.beginPath();
 
             const halfHeight = canvas.height / 2;
-            const sliceWidth = 2; // Her 2 pikselde bir nokta koy
+            const sliceWidth = 2; 
 
-            // Konuşmanın iniş çıkışlarını (genel ses yüksekliğini) simüle etmek için
-            // yavaş değişen bir sinüs dalgası kullanıyoruz
-            const masterAmplitude = (Math.sin(noiseOffset * 0.05) + 1) * 0.4 + 0.1; // 0.1 ile 0.9 arası değişir
+            if (currentTime - lastAmplitudeChangeTime > amplitudeChangeInterval) {
+                targetAmplitude = Math.random() * 0.8; 
+                if (Math.random() < 0.3) targetAmplitude = 0; 
+                lastAmplitudeChangeTime = currentTime;
+            }
+
+            currentAmplitude += (targetAmplitude - currentAmplitude) * amplitudeChangeSpeed;
+            currentAmplitude = Math.max(0.05, currentAmplitude); 
+
+            const waveFrequency = 0.05 + currentAmplitude * 0.1; 
+            const waveRoughness = 0.5 + currentAmplitude * 0.5; 
 
             ctx.moveTo(0, halfHeight);
 
             for (let x = 0; x < canvas.width; x += sliceWidth) {
-                // 1. Temel bir ses tonu (sinüs dalgası)
-                const baseWave = Math.sin(x * 0.1 + noiseOffset) * 0.3; // Düşük genlikli temel ton
-                
-                // 2. Daha kaotik, gürültülü bir dalga (konuşma gibi)
-                const randomNoise = (Math.random() - 0.5) * 0.7; // Daha yüksek genlikli gürültü
-                
-                // 3. İkisini birleştir ve ana ses yüksekliği ile çarp
-                const combinedValue = (baseWave + randomNoise) * masterAmplitude;
-                
-                // Y pozisyonunu hesapla
+                const baseWave = Math.sin(x * waveFrequency + noiseOffset) * 0.5;
+                const randomNoise = (Math.random() - 0.5) * waveRoughness; 
+                const combinedValue = (baseWave + randomNoise) * currentAmplitude;
                 const y = halfHeight + combinedValue * halfHeight;
-                
                 ctx.lineTo(x, y);
             }
             
             ctx.stroke();
-            noiseOffset += 0.1; // Animasyon hızı
+            noiseOffset += 0.05; 
 
-            animationFrameId = requestAnimationFrame(drawWaveform); // Döngüyü devam ettir
+            animationFrameId = requestAnimationFrame(drawWaveform);
         }
 
         // --- Simülasyonu Başlat ---
         function startSimulation() {
-            if (animationFrameId) return; // Zaten çalışıyorsa başlatma
-            
+            if (animationFrameId) return;
             playButton.disabled = true;
             stopButton.disabled = false;
             statusMessageEl.textContent = 'Analiz ediliyor...';
-            
+            currentAmplitude = 0.1;
+            targetAmplitude = Math.random() * 0.8;
+            lastAmplitudeChangeTime = performance.now();
             animationFrameId = requestAnimationFrame(drawWaveform);
         }
 
@@ -316,37 +384,26 @@
             stopButton.disabled = true;
             statusMessageEl.textContent = 'Durduruldu.';
             
-            // Canvas'ı temizle ama son kareyi gösterme, boşalt
             setTimeout(() => {
-                 if(!animationFrameId) { // Hala duruyorsa temizle
+                 if(!animationFrameId) { 
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     statusMessageEl.textContent = '';
                  }
-            }, 1000); // 1 saniye sonra temizle
+            }, 1000); 
         }
 
         // --- Buton Olayları ---
         playButton.addEventListener('click', () => {
-            if (selectedFile) {
-                startSimulation();
+            if (selectedFile) startSimulation();
+        });
+
+        stopButton.addEventListener('click', ()ax);
             }
         });
 
-        stopButton.addEventListener('click', () => {
-            stopSimulation();
-        });
-        
-        transferButton.addEventListener('click', () => {
-            if (selectedFile) {
-                statusMessageEl.textContent = `${selectedFile.name} aktarılıyor... Lütfen bekleyin.`;
-                transferButton.disabled = true;
-                // Sahte bir yükleme süresi simülasyonu
-                setTimeout(() => {
-                    statusMessageEl.textContent = `BAŞARILI: ${selectedFile.name} aktarıldı.`;
-                    transferButton.disabled = false;
-                }, 2000 + Math.random() * 1000);
-            }
-        });
+        // --- Başlangıç ---
+        renderFileList();
+        resizeCanvas(); // Canvas'ı ilk yüklemede boyutlandır
     </script>
 
     <!-- PWA Service Worker Kayıt Script'i -->
