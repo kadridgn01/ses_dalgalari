@@ -397,7 +397,21 @@
             if (selectedFile) startSimulation();
         });
 
-        stopButton.addEventListener('click', ()ax);
+        // DEĞİŞİKLİK: Hatalı olan '()ax);' düzeltildi.
+        stopButton.addEventListener('click', () => {
+            stopSimulation();
+        });
+        
+        // DEĞİŞİKLİK: Eksik olan transferButton olayı eklendi.
+        transferButton.addEventListener('click', () => {
+            if (selectedFile) {
+                statusMessageEl.textContent = `${selectedFile.name} aktarılıyor... Lütfen bekleyin.`;
+                transferButton.disabled = true;
+                // Sahte bir yükleme süresi simülasyonu
+                setTimeout(() => {
+                    statusMessageEl.textContent = `BAŞARILI: ${selectedFile.name} aktarıldı.`;
+                    transferButton.disabled = false;
+                }, 2000 + Math.random() * 1000);
             }
         });
 
