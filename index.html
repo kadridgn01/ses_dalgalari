@@ -68,7 +68,8 @@
             </div>
 
             <!-- Sağ Panel: Önizleme ve Kontroller -->
-            <div class="w-2/3 p-6 flex flex-col">
+            <!-- DEĞİŞİKLİK: Kaydırma için overflow-y-auto eklendi -->
+            <div class="w-2/3 p-6 flex flex-col overflow-y-auto">
                 <h2 class="text-lg font-bold text-gray-400 mb-2">ÖNİZLEME EKRANI</h2>
                 <p class="text-sm text-gray-500 mb-4">Seçili Kayıt: <span id="current-file" class="font-mono text-yellow-400">Hiçbiri</span></p>
 
@@ -128,6 +129,59 @@
                         </label>
                     </div>
                 </div>
+
+                <!-- YENİ EKLENEN BÖLÜMLER -->
+                <div classs="mt-4 space-y-4">
+                    <!-- Formant Slider -->
+                    <div>
+                        <label for="formant" class="block text-sm font-medium text-gray-400 mt-4">Formant Kaydırma (Cinsiyet)</label>
+                        <input type="range" id="formant" name="formant" min="-5" max="5" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                    </div>
+
+                    <!-- Reverb Slider -->
+                    <div>
+                        <label for="reverb" class="block text-sm font-medium text-gray-400 mt-4">Yankı (Reverb)</label>
+                        <input type="range" id="reverb" name="reverb" min="0" max="100" value="10" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                    </div>
+
+                    <!-- Humanization Slider -->
+                    <div>
+                        <label for="human" class="block text-sm font-medium text-gray-400 mt-4">Doğallık (İnsanileştirme)</label>
+                        <input type="range" id="human" name="human" min="0" max="100" value="85" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                    </div>
+
+                    <!-- Ekolayzır Bölümü -->
+                    <div class="mt-6 border-t border-gray-700 pt-4">
+                        <h3 class="text-md font-semibold text-matrix-green">EKOLAYZIR (EQ)</h3>
+                        <div class="space-y-3 mt-2">
+                             <div>
+                                <label for="eq-bass" class="block text-sm font-medium text-gray-400">Bass (Düşük Frekans)</label>
+                                <input type="range" id="eq-bass" name="eq-bass" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                            </div>
+                            <div>
+                                <label for="eq-mid" class="block text-sm font-medium text-gray-400">Mid (Orta Frekans)</label>
+                                <input type="range" id="eq-mid" name="eq-mid" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                            </div>
+                            <div>
+                                <label for="eq-treble" class="block text-sm font-medium text-gray-400">Treble (Yüksek Frekans)</label>
+                                <input type="range" id="eq-treble" name="eq-treble" min="-10" max="10" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-matrix-green">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arka Plan Ambiyans Ekleme -->
+                    <div class="mt-6 border-t border-gray-700 pt-4">
+                        <label for="ambience" class="block text-sm font-medium text-gray-400 mb-1">Arka Plan Ambiyansı Ekle:</label>
+                        <select id="ambience" name="ambience" class="block w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:border-matrix-green focus:ring-1 focus:ring-matrix-green">
+                            <option>Yok</option>
+                            <option value="kafe">Kafe Gürültüsü</option>
+                            <option value="ofis">Ofis Sesleri</option>
+                            <option value="sokak">Sokak Trafiği</option>
+                            <option value="hizli_nefes">Hızlı Nefes Alma</option>
+                        </select>
+                    </div>
+                </div>
+
 
             </div>
         </div>
@@ -200,6 +254,8 @@
 
         // --- Ses Dalgası Simülasyonu ---
         let noiseOffset = 0;
+        
+        // DEĞİŞİKLİK: Ses dalgası çizim fonksiyonu daha gerçekçi olması için tamamen değiştirildi.
         function drawWaveform() {
             if (!animationFrameId) return; // Durdurulduysa çizme
 
@@ -208,25 +264,33 @@
             ctx.strokeStyle = '#00ff41'; // Matrix yeşili
             ctx.beginPath();
 
-            const sliceWidth = canvas.width * 1.0 / 128; // Daha az çubuk, daha net görünüm
-            let x = 0;
+            const halfHeight = canvas.height / 2;
+            const sliceWidth = 2; // Her 2 pikselde bir nokta koy
 
-            for (let i = 0; i < 128; i++) {
-                // Perlin gürültüsü gibi davranan basit bir simülasyon
-                const noise = Math.sin(i * 0.1 + noiseOffset) * Math.cos(i * 0.05 + noiseOffset * 0.5);
-                const v = Math.abs(noise) * (canvas.height / 2); // Değer (0 ile yükseklik/2 arası)
+            // Konuşmanın iniş çıkışlarını (genel ses yüksekliğini) simüle etmek için
+            // yavaş değişen bir sinüs dalgası kullanıyoruz
+            const masterAmplitude = (Math.sin(noiseOffset * 0.05) + 1) * 0.4 + 0.1; // 0.1 ile 0.9 arası değişir
+
+            ctx.moveTo(0, halfHeight);
+
+            for (let x = 0; x < canvas.width; x += sliceWidth) {
+                // 1. Temel bir ses tonu (sinüs dalgası)
+                const baseWave = Math.sin(x * 0.1 + noiseOffset) * 0.3; // Düşük genlikli temel ton
                 
-                const y = (canvas.height / 2) - v;
-                const height = v * 2;
+                // 2. Daha kaotik, gürültülü bir dalga (konuşma gibi)
+                const randomNoise = (Math.random() - 0.5) * 0.7; // Daha yüksek genlikli gürültü
                 
-                // Dikey çubuklar çiz
-                ctx.rect(x, y, sliceWidth, height);
+                // 3. İkisini birleştir ve ana ses yüksekliği ile çarp
+                const combinedValue = (baseWave + randomNoise) * masterAmplitude;
                 
-                x += sliceWidth + 1; // Çubuklar arası boşluk
+                // Y pozisyonunu hesapla
+                const y = halfHeight + combinedValue * halfHeight;
+                
+                ctx.lineTo(x, y);
             }
             
             ctx.stroke();
-            noiseOffset += 0.1; // Dalgaların "hareket etmesini" sağlar
+            noiseOffset += 0.1; // Animasyon hızı
 
             animationFrameId = requestAnimationFrame(drawWaveform); // Döngüyü devam ettir
         }
